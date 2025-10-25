@@ -1,0 +1,19 @@
+{
+  "name": "sample-app",
+  "version": "0.1.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest --coverage",
+    "lint": "eslint . --ext .js",
+    "ci": "npm run lint && npm test"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.0.0"
+  }
+}
