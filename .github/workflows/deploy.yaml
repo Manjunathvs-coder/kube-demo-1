@@ -1,0 +1,54 @@
+name: Build, Push and Deploy to EKS
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  id-token: write        # Needed for OIDC
+  contents: read         # Needed to clone the repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Authenticate with AWS via OIDC
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::420518854293:role/GitHubActions-ECR-EKS-Role
+          aws-region: ap-southeast-1
+
+      # Step 3: Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 4: Build, tag, and push Docker image to ECR
+      - name: Build, tag, and push image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPO: sample-app
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REPO:$IMAGE_TAG .
+          docker tag $REPO:$IMAGE_TAG $REGISTRY/$REPO:$IMAGE_TAG
+          docker push $REGISTRY/$REPO:$IMAGE_TAG
+
+      # Step 5: Deploy updated image to EKS
+      - name: Deploy to EKS
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPO: sample-app
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          aws eks update-kubeconfig --region ap-southeast-1 --name my-demo-cluster
+          kubectl set image deployment/sample-app my-web-app=$REGISTRY/$REPO:$IMAGE_TAG
+          kubectl rollout status deployment/sample-app

@@ -1,27 +1,34 @@
 name: CI
 
 on:
-    push:
-        branches: [ master ]
-    pull_request:
-        branches: [ master ]
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
 jobs:
-    test-and-lint:
-        runs-on: ubuntu-latest
-        steps: 
-            - name: Checkout code
-              uses: actions/checkout@v4
+  test-and-lint:
+    runs-on: ubuntu-latest
 
-            - name: use Node js
-              uses: actions/setup-node@v4
-              with:
-                node-version: 18
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Install Dependencies
-              run: npm ci
-            
-            - name: Lint
-              run: npm run lint
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-            - name: Run tests
-              run: npm test
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run linter
+      - name: Lint code
+        run: npm run lint
+
+      # Step 5: Run tests
+      - name: Run tests
+        run: npm test
