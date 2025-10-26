@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: service
+metatdata:
+  name: sample-app-svc
+spec:
+  selector:
+    app: sample-app
+  ports:  
+    - protocol: TCP
+      port: 80
+      targetport: 3000
+  type:
+    loadBalancer
